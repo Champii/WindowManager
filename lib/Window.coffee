@@ -80,25 +80,28 @@ class Window extends EventEmitter
     @layer.draw()
 
   _AddAnchors: ->
+    @anchors = []
+
     corners =
       topLeft:
         x: 0
         y: 0
       topRight:
         x: 0
-        y: @width + @title.getHeight()
+        y: @height + @title.getHeight()
       bottomLeft:
-        x: @height
+        x: @width
         y: 0
       bottomRight:
-        x: @height
-        y: @width + @title.getHeight()
+        x: @width
+        y: @height + @title.getHeight()
 
     for name, corner of corners
       @_AddAnchor name, corner
 
   _AddAnchor: (name, corner) ->
-    test = new Kinetic.Circle
+
+    anchor = new Kinetic.Circle
       x: corner.x
       y: corner.y
       stroke: '#666'
@@ -108,24 +111,44 @@ class Window extends EventEmitter
       name: name
       draggable: true
       dragOnTop: false
-      opacity: 0
+      opacity: 0.4
 
-    @group.add test
+    @group.add anchor
 
-    test.on 'mouseover', =>
+    anchor.on 'mouseover', =>
       # console.log 'lol'
-      test.setOpacity 0.5
-      test.draw()
+      anchor.setOpacity 0.5
+      anchor.draw()
 
-    test.on 'mouseout', =>
+    anchor.on 'mouseout', =>
       # console.log 'mdr'
-      test.setOpacity 0
+      anchor.setOpacity 0
       @layer.draw()
 
-    test.on 'dragmove', =>
-      @_Resize test
+    anchor.on 'dragmove', =>
+      @_Resize anchor
 
+    @anchors.push anchor
     @layer.draw()
+
+  _UpdateAnchors: ->
+    corners =
+      topLeft:
+        x: 0
+        y: 0
+      topRight:
+        x: 0
+        y: @height + @title.getHeight()
+      bottomLeft:
+        x: @width
+        y: 0
+      bottomRight:
+        x: @width
+        y: @height + @title.getHeight()
+
+    for anchor in @anchors
+      anchor.x corners[anchor.name()].x
+      anchor.y corners[anchor.name()].y
 
   _Resize: (anchor) ->
 
@@ -143,10 +166,42 @@ class Window extends EventEmitter
 
         @closeButton.x anchor.x() - 15
 
-        @width = @content.width()
-        @height = @content.height()
+      when 'topLeft'
+        if @width - anchor.x() <= 100
+          anchor.x 0
+        if @height - anchor.y() <= 100
+          anchor.y 0
 
-        @layer.draw()
+        @content.width @width - anchor.x()
+        @content.height @height - anchor.y()
+
+        @group.x @group.x() + anchor.x()
+        @group.y @group.y() + anchor.y()
+
+        @title.width @content.width()
+        @closeButton.x @content.width() - 15
+
+      # when 'topRight'
+      #   if @width - anchor.x() <= 100
+      #     anchor.x 0
+      #   if @height - anchor.y() <= 100
+      #     anchor.y 0
+
+      #   @group.x @group.x() + anchor.x()
+      #   @group.y @group.y() + anchor.y()
+
+      #   @content.width @width - anchor.x()
+      #   @content.height @height - anchor.y()
+
+      #   @title.width @content.width()
+      #   @closeButton.x @content.width() - 15
+
+
+    @width = @content.width()
+    @height = @content.height()
+
+    @_UpdateAnchors()
+    @layer.draw()
 
     @emit 'resize'
 
