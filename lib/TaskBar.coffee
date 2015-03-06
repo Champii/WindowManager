@@ -2,7 +2,13 @@ class TaskBar
 
   constructor: (params) ->
 
-    for name, param of params
+    accepted = [
+      'layer'
+      'wm'
+    ]
+
+    console.log params
+    for name, param of params when name in accepted
       @[name] = param
 
     @bar = new Kinetic.Rect

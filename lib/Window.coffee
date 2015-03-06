@@ -1,7 +1,7 @@
 class Window extends EventEmitter
 
   constructor: (params) ->
-
+    super()
     accepted = [
       'wid'
       'width'
@@ -115,11 +115,51 @@ class Window extends EventEmitter
       stroke: 'black'
       cornerRadius: 3
 
-    @group.on 'mousedown', (e) =>
-      console.log 'Click ?!'
-      @emit 'click', 
-        x: e.evt.x - @x
-        y: e.evt.y - @y - @title.height()
+    @content.on 'mousedown', (e) =>
+      # console.log 'Click ?!'
+      # console.log 
+      #   x: e.evt.x - @group.x()
+      #   y: e.evt.y - @group.y() - @title.height()
+      #   button: Math.max(0, e.evt.which)
+
+
+      @emit 'mousedown', 
+        x: e.evt.x - @group.x()
+        y: e.evt.y - @group.y() - @title.height()
+        button: Math.max(0, e.evt.which)
+
+    @content.on 'mouseup', (e) =>
+      # console.log 'Click ?!'
+      # console.log 
+      #   x: e.evt.x - @group.x()
+      #   y: e.evt.y - @group.y() - @title.height()
+      #   button: Math.max(0, e.evt.which)
+
+      @emit 'mouseup', 
+        x: e.evt.x - @group.x()
+        y: e.evt.y - @group.y() - @title.height()
+        button: Math.max(0, e.evt.which)
+
+
+    # mousemove = _.throttle (e) =>
+    @content.on 'mousemove', (e) =>
+      # console.log 'move', 
+      #   x: e.evt.x - @group.x()
+      #   y: e.evt.y - @group.y() - @title.height()
+
+      # console.log
+      #   x: e.evt.x - @group.x()
+      #   y: e.evt.y - @group.y() - @title.height()
+      @emit 'mousemove2',
+        x: e.evt.x - @group.x()
+        y: e.evt.y - @group.y() - @title.height()
+
+      @emit 'tamere',
+        x: e.evt.x - @group.x()
+        y: e.evt.y - @group.y() - @title.height()
+
+    , 100
+
 
     @group.add @content
 
