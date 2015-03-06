@@ -257,6 +257,5 @@ class Window extends EventEmitter
     @_UpdateAnchors()
     @layer.draw()
 
-    @emit 'resize'
-
-
+    console.log 'resize ?', @emit
+    @emit 'resize', @
