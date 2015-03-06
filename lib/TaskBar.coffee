@@ -1,12 +1,3 @@
-class Button
-
-  constructor: (params) ->
-    for name, param of params
-      @[name] = param
-
-    @button = new Kinetic.Rect params
-    @layer.add @button
-
 class TaskBar
 
   constructor: (params) ->
@@ -25,13 +16,16 @@ class TaskBar
 
     @layer.add @bar
 
-
-    @button = new Button
+    @button = new Kinetic.Rect
       x: 5
       y: document.body.scrollHeight - 20
       height: 15
       width: 40
-      layer: @layer
       fill: 'black'
+
+    @layer.add @button
+
+    @button.on 'mousedown', =>
+      @wm.NewWindow()
 
 

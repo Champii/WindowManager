@@ -23,5 +23,6 @@ class DeskTop
 
     @taskBar = new TaskBar
       layer: @layer
+      wm: @wm
 
     document.getElementsByTagName('canvas')[0].style.background = '#BBBBBB'
