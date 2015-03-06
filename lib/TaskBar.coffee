@@ -20,8 +20,10 @@ class TaskBar
       x: 5
       y: document.body.scrollHeight - 20
       height: 15
-      width: 40
-      fill: 'black'
+      width: 70
+      fill: '#444444'
+      strokeWidth: 1
+      stroke: 'black'
 
     @layer.add @button
 

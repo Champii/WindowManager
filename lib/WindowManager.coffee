@@ -5,6 +5,7 @@ class WindowManager
   windows: {}
   baseX: 20
   baseY: 20
+  focus: 0
 
   constructor: (params) ->
     console.log 'WindowManager ctor'
@@ -41,3 +42,10 @@ class WindowManager
 
     win.on 'close', =>
       delete @windows[win.wid]
+
+    win.on 'click', =>
+      if win.wid isnt focus
+        @windows[focus].UnFocus() if focus
+        win.Focus()
+        focus = win.wid
+

@@ -9,9 +9,31 @@ class Window extends EventEmitter
       x: @x
       y: @y
       stroke: 'black'
-      strokeWidth: 4
-      cornerRadius: 20
+      # strokeWidth: 4
+      # cornerRadius: 20
 
+    @_MakeDecoration()
+    @_PrepareContent()
+
+  Focus: ->
+    @emit 'focus'
+    @group.moveToTop()
+    @layer.draw()
+
+
+  UnFocus: ->
+    @emit 'unfocus'
+
+  Close: ->
+    @emit 'close'
+    @group.remove()
+    @layer.draw()
+
+  _MakeDecoration: ->
+    @_MakeTitleBar()
+    @_AddAnchors()
+
+  _MakeTitleBar: ->
     @title = new Kinetic.Rect
       x: 0
       y: 0
@@ -20,6 +42,7 @@ class Window extends EventEmitter
       fill: 'green'
       strokeWidth: 1
       stroke: 'black'
+      cornerRadius: 3
 
     @closeButton = new Kinetic.Rect
       x: @width - 15
@@ -45,11 +68,18 @@ class Window extends EventEmitter
     @title.on 'mousedown', (e) =>
       document.body.style.cursor = 'pointer';
       @group.draggable true
+      @Focus()
+      @group.opacity 0.5
+      @layer.draw()
 
     @title.on 'mouseup', (e) =>
       document.body.style.cursor = 'default';
       @group.draggable false
+      @group.opacity 1
+      @layer.draw()
 
+
+  _PrepareContent: ->
     @content = new Kinetic.Rect
       # sceneFunc: (ctx) =>
         # ctx.putImageData @offscreen.getContext('2d').getImageData(0, 0, @width, @height), @group.getX(), @group.getY() + @title.getHeight()
@@ -61,23 +91,22 @@ class Window extends EventEmitter
       fill: "#AAAAAA"
       strokeWidth: 1
       stroke: 'black'
+      cornerRadius: 3
 
-    # @group.add @title
+    @content.on 'mousedown', (e) =>
+      @emit 'click', 
+        x: e.evt.x - @x
+        y: e.evt.y - @y - @title.height()
+
     @group.add @content
 
     @layer.add @group
     @layer.draw()
 
-    @_AddAnchors()
 
     # @on 'drawn', (region) =>
     #   @content.draw()
     #   @title.draw()
-
-  Close: ->
-    @emit 'close'
-    @group.remove()
-    @layer.draw()
 
   _AddAnchors: ->
     @anchors = []
@@ -87,14 +116,15 @@ class Window extends EventEmitter
         x: 0
         y: 0
       topRight:
-        x: 0
-        y: @height + @title.getHeight()
-      bottomLeft:
         x: @width
         y: 0
+      bottomLeft:
+        x: 0
+        y: @height + @title.getHeight()
       bottomRight:
         x: @width
         y: @height + @title.getHeight()
+
 
     for name, corner of corners
       @_AddAnchor name, corner
@@ -107,21 +137,19 @@ class Window extends EventEmitter
       stroke: '#666'
       fill: '#ddd'
       strokeWidth: 2
-      radius: 8
+      radius: 6
       name: name
       draggable: true
       dragOnTop: false
-      opacity: 0.4
+      opacity: 0
 
     @group.add anchor
 
     anchor.on 'mouseover', =>
-      # console.log 'lol'
       anchor.setOpacity 0.5
       anchor.draw()
 
     anchor.on 'mouseout', =>
-      # console.log 'mdr'
       anchor.setOpacity 0
       @layer.draw()
 
@@ -137,11 +165,11 @@ class Window extends EventEmitter
         x: 0
         y: 0
       topRight:
-        x: 0
-        y: @height + @title.getHeight()
-      bottomLeft:
         x: @width
         y: 0
+      bottomLeft:
+        x: 0
+        y: @height + @title.getHeight()
       bottomRight:
         x: @width
         y: @height + @title.getHeight()
@@ -154,17 +182,13 @@ class Window extends EventEmitter
 
     switch anchor.name()
       when 'bottomRight'
-        if anchor.x() < 100
+        if anchor.x() <= 100
           anchor.x @width
-        if anchor.y() < 100
+        if anchor.y() <= 100
           anchor.y @height + @title.getHeight()
 
         @content.width anchor.x()
         @content.height anchor.y() - @title.getHeight()
-
-        @title.width anchor.x()
-
-        @closeButton.x anchor.x() - 15
 
       when 'topLeft'
         if @width - anchor.x() <= 100
@@ -178,24 +202,30 @@ class Window extends EventEmitter
         @group.x @group.x() + anchor.x()
         @group.y @group.y() + anchor.y()
 
-        @title.width @content.width()
-        @closeButton.x @content.width() - 15
+      when 'topRight'
+        if anchor.x() <= 100
+          anchor.x @width
+        if @height - anchor.y() <= 100
+          anchor.y 0
 
-      # when 'topRight'
-      #   if @width - anchor.x() <= 100
-      #     anchor.x 0
-      #   if @height - anchor.y() <= 100
-      #     anchor.y 0
+        @content.width anchor.x()
 
-      #   @group.x @group.x() + anchor.x()
-      #   @group.y @group.y() + anchor.y()
+        @content.height @height - anchor.y()
+        @group.y @group.y() + anchor.y()
 
-      #   @content.width @width - anchor.x()
-      #   @content.height @height - anchor.y()
+      when 'bottomLeft'
+        if anchor.y() <= 100
+          anchor.y @height + @title.getHeight()
+        if @width - anchor.x() <= 100
+          anchor.x 0
 
-      #   @title.width @content.width()
-      #   @closeButton.x @content.width() - 15
+        @content.width @width - anchor.x()
+        @group.x @group.x() + anchor.x()
 
+        @content.height anchor.y() - @title.getHeight()
+
+    @title.width @content.width()
+    @closeButton.x @content.width() - 15
 
     @width = @content.width()
     @height = @content.height()
