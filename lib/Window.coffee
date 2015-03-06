@@ -20,7 +20,6 @@ class Window extends EventEmitter
     @group.moveToTop()
     @layer.draw()
 
-
   UnFocus: ->
     @emit 'unfocus'
 
@@ -80,10 +79,13 @@ class Window extends EventEmitter
 
 
   _PrepareContent: ->
-    @content = new Kinetic.Rect
-      # sceneFunc: (ctx) =>
-        # ctx.putImageData @offscreen.getContext('2d').getImageData(0, 0, @width, @height), @group.getX(), @group.getY() + @title.getHeight()
-        # ctx.fillStrokeShape(@content);
+    console.log 'offscreen', @offscreen
+    @content = new Kinetic.Shape
+      sceneFunc: (ctx) =>
+        return if not @offscreen?
+        ctx.putImageData @offscreen.getContext('2d').getImageData(0, 0, @width, @height), @group.getX(), @group.getY() + @title.getHeight()
+        ctx.fillStrokeShape(@content);
+        # console.log @offscreen
       x: 0
       y: 20
       width: @width
@@ -103,10 +105,8 @@ class Window extends EventEmitter
     @layer.add @group
     @layer.draw()
 
-
-    # @on 'drawn', (region) =>
-    #   @content.draw()
-    #   @title.draw()
+    @on 'draw', (region) =>
+      @group.draw()
 
   _AddAnchors: ->
     @anchors = []
