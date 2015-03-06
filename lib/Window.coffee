@@ -2,7 +2,20 @@ class Window extends EventEmitter
 
   constructor: (params) ->
 
-    for name, param of params
+    accepted = [
+      'wid'
+      'width'
+      'height'
+      'x'
+      'y'
+      'layer'
+      'offscreen'
+      'properties'
+      'xpra'
+    ]
+
+    for name, param of params when name in accepted
+      # console.log 'win param', name, param
       @[name] = param
 
     @group = new Kinetic.Group
@@ -79,8 +92,15 @@ class Window extends EventEmitter
 
 
   _PrepareContent: ->
-    console.log 'offscreen', @offscreen
+    # console.log 'offscreen', @offscreen
     @content = new Kinetic.Shape
+      hitFunc: (context) =>
+        # console.log context
+        context.beginPath();
+        context.rect @content.x(), @content.y(), @content.width(), @content.height()
+        # context.arc(0, 0, this.getOuterRadius() + 10, 0, Math.PI * 2, true);
+        context.closePath();
+        context.fillStrokeShape(@content);
       sceneFunc: (ctx) =>
         return if not @offscreen?
         ctx.putImageData @offscreen.getContext('2d').getImageData(0, 0, @width, @height), @group.getX(), @group.getY() + @title.getHeight()
@@ -95,7 +115,8 @@ class Window extends EventEmitter
       stroke: 'black'
       cornerRadius: 3
 
-    @content.on 'mousedown', (e) =>
+    @group.on 'mousedown', (e) =>
+      console.log 'Click ?!'
       @emit 'click', 
         x: e.evt.x - @x
         y: e.evt.y - @y - @title.height()
@@ -106,6 +127,9 @@ class Window extends EventEmitter
     @layer.draw()
 
     @on 'draw', (region) =>
+      # console.log 'draw'
+      @content.draw()
+      @titleGroup.draw()
       @group.draw()
 
   _AddAnchors: ->

@@ -37,13 +37,16 @@ class WindowManager
 
     win = new Window params
 
-    win.wid = @wid++
+    win.wid = @wid++ if not win.wid?
     @windows[win.wid] = win
 
     win.on 'close', =>
+      console.log @windows
       delete @windows[win.wid]
+      console.log @windows
 
     win.on 'click', =>
+      console.log 'click'
       if win.wid isnt focus
         @windows[focus].UnFocus() if focus
         win.Focus()
