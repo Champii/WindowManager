@@ -10,10 +10,16 @@ class WindowManager
   constructor: (params) ->
     console.log 'WindowManager ctor'
 
+    accepted = [
+      'layer'
+      'height'
+      'width'
+    ]
+
     if not params.layer?
       throw new Error 'No layer defined'
 
-    for name, param of params
+    for name, param of params when name in accepted
       @[name] = param
 
   NewWindow: (params) ->
@@ -38,17 +44,14 @@ class WindowManager
     win = new Window params
 
     win.wid = @wid++ if not win.wid?
-    @windows[win.wid] = win
 
     win.on 'close', =>
-      console.log @windows
       delete @windows[win.wid]
-      console.log @windows
 
-    win.on 'click', =>
-      console.log 'click'
+    win.on 'mousedown', =>
       if win.wid isnt focus
         @windows[focus].UnFocus() if focus
         win.Focus()
         focus = win.wid
 
+    @windows[win.wid] = win

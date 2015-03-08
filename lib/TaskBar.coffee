@@ -7,7 +7,6 @@ class TaskBar
       'wm'
     ]
 
-    console.log params
     for name, param of params when name in accepted
       @[name] = param
 

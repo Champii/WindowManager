@@ -12,21 +12,23 @@ class Window extends EventEmitter
       'offscreen'
       'properties'
       'xpra'
+      'override'
     ]
 
     for name, param of params when name in accepted
-      # console.log 'win param', name, param
       @[name] = param
 
+    console.log @
     @group = new Kinetic.Group
       x: @x
       y: @y
       stroke: 'black'
-      # strokeWidth: 4
-      # cornerRadius: 20
 
-    @_MakeDecoration()
+    @_MakeDecoration() if not @override
     @_PrepareContent()
+
+    if @override
+      @group.moveToTop()
 
   Focus: ->
     @emit 'focus'
@@ -89,6 +91,9 @@ class Window extends EventEmitter
       @group.draggable false
       @group.opacity 1
       @layer.draw()
+      @x = @group.x()
+      @y = @group.y()
+      @emit 'move', @
 
 
   _PrepareContent: ->
@@ -103,7 +108,7 @@ class Window extends EventEmitter
         context.fillStrokeShape(@content);
       sceneFunc: (ctx) =>
         return if not @offscreen?
-        ctx.putImageData @offscreen.getContext('2d').getImageData(0, 0, @width, @height), @group.getX(), @group.getY() + @title.getHeight()
+        ctx.putImageData @offscreen.getContext('2d').getImageData(0,0, @width, @height), @group.getX(), @group.getY() + (@title?.getHeight() || 0)
         ctx.fillStrokeShape(@content);
         # console.log @offscreen
       x: 0
@@ -116,50 +121,21 @@ class Window extends EventEmitter
       cornerRadius: 3
 
     @content.on 'mousedown', (e) =>
-      # console.log 'Click ?!'
-      # console.log 
-      #   x: e.evt.x - @group.x()
-      #   y: e.evt.y - @group.y() - @title.height()
-      #   button: Math.max(0, e.evt.which)
-
-
       @emit 'mousedown', 
         x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - @title.height()
+        y: e.evt.y - @group.y() - (@title?.height() || 0)
         button: Math.max(0, e.evt.which)
 
     @content.on 'mouseup', (e) =>
-      # console.log 'Click ?!'
-      # console.log 
-      #   x: e.evt.x - @group.x()
-      #   y: e.evt.y - @group.y() - @title.height()
-      #   button: Math.max(0, e.evt.which)
-
       @emit 'mouseup', 
         x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - @title.height()
+        y: e.evt.y - @group.y() - (@title?.height() || 0)
         button: Math.max(0, e.evt.which)
 
-
-    # mousemove = _.throttle (e) =>
     @content.on 'mousemove', (e) =>
-      # console.log 'move', 
-      #   x: e.evt.x - @group.x()
-      #   y: e.evt.y - @group.y() - @title.height()
-
-      # console.log
-      #   x: e.evt.x - @group.x()
-      #   y: e.evt.y - @group.y() - @title.height()
-      @emit 'mousemove2',
+      @emit 'mousemove',
         x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - @title.height()
-
-      @emit 'tamere',
-        x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - @title.height()
-
-    , 100
-
+        y: e.evt.y - @group.y() - (@title?.height() || 0)
 
     @group.add @content
 
@@ -167,10 +143,9 @@ class Window extends EventEmitter
     @layer.draw()
 
     @on 'draw', (region) =>
-      # console.log 'draw'
       @content.draw()
-      @titleGroup.draw()
-      @group.draw()
+      @titleGroup?.draw()
+      # @group.draw()
 
   _AddAnchors: ->
     @anchors = []
@@ -297,5 +272,4 @@ class Window extends EventEmitter
     @_UpdateAnchors()
     @layer.draw()
 
-    console.log 'resize ?', @emit
     @emit 'resize', @
