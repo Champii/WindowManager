@@ -12,6 +12,7 @@ class WindowManager
 
     accepted = [
       'layer'
+      'layerOverride'
       'height'
       'width'
     ]
@@ -26,6 +27,9 @@ class WindowManager
     params = {} if not params?
 
     params.layer = @layer
+
+    if params.override
+      params.layer = @layerOverride
 
     if not params.x?
       params.x = @baseX
@@ -48,10 +52,10 @@ class WindowManager
     win.on 'close', =>
       delete @windows[win.wid]
 
-    win.on 'mousedown', =>
-      if win.wid isnt focus
-        @windows[focus].UnFocus() if focus
-        win.Focus()
-        focus = win.wid
+    # win.on 'mousedown', =>
+    #   if win.wid isnt focus
+        # @windows[focus].UnFocus() if focus
+        # win.Focus()
+        # focus = win.wid
 
     @windows[win.wid] = win

@@ -11,14 +11,17 @@ class Window extends EventEmitter
       'layer'
       'offscreen'
       'properties'
-      'xpra'
+      # 'xpra'
       'override'
     ]
 
     for name, param of params when name in accepted
       @[name] = param
 
-    console.log @
+    if @override
+      #FIXME
+      @y += 20
+
     @group = new Kinetic.Group
       x: @x
       y: @y
@@ -27,19 +30,28 @@ class Window extends EventEmitter
     @_MakeDecoration() if not @override
     @_PrepareContent()
 
-    if @override
-      @group.moveToTop()
-
   Focus: ->
-    @emit 'focus'
-    @group.moveToTop()
-    @layer.draw()
+    if not @override
+      console.log 'tamere'
+      @emit 'focus'
+      @IsFocused()
 
-  UnFocus: ->
-    @emit 'unfocus'
+  IsFocused: ->
+    if not @override
+      @group.moveToTop()
+      @layer.draw()
+
+  # UnFocus: ->
+  #   @emit 'unfocus'
+  #   @IsUnfocused()
+
+  # IsUnfocused: ->
 
   Close: ->
     @emit 'close'
+    @IsClosed()
+
+  IsClosed: ->
     @group.remove()
     @layer.draw()
 
@@ -80,11 +92,11 @@ class Window extends EventEmitter
     @group.add @titleGroup
 
     @title.on 'mousedown', (e) =>
-      document.body.style.cursor = 'pointer';
+      document.body.style.cursor = 'move';
       @group.draggable true
       @Focus()
       @group.opacity 0.5
-      @layer.draw()
+      # @layer.draw()
 
     @title.on 'mouseup', (e) =>
       document.body.style.cursor = 'default';
@@ -121,31 +133,33 @@ class Window extends EventEmitter
       cornerRadius: 3
 
     @content.on 'mousedown', (e) =>
+      console.log 'mousedown'
+      @Focus()
       @emit 'mousedown', 
         x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - (@title?.height() || 0)
+        y: e.evt.y - @group.y() - (@title?.height() || 20)
         button: Math.max(0, e.evt.which)
 
     @content.on 'mouseup', (e) =>
       @emit 'mouseup', 
         x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - (@title?.height() || 0)
+        y: e.evt.y - @group.y() - (@title?.height() || 20)
         button: Math.max(0, e.evt.which)
 
     @content.on 'mousemove', (e) =>
       @emit 'mousemove',
         x: e.evt.x - @group.x()
-        y: e.evt.y - @group.y() - (@title?.height() || 0)
+        y: e.evt.y - @group.y() - (@title?.height() || 20)
 
     @group.add @content
 
     @layer.add @group
     @layer.draw()
 
-    @on 'draw', (region) =>
-      @content.draw()
-      @titleGroup?.draw()
-      # @group.draw()
+  Draw: ->
+    @content.draw()
+    @titleGroup?.draw()
+    # @group.draw()
 
   _AddAnchors: ->
     @anchors = []

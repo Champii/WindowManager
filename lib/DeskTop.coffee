@@ -13,11 +13,14 @@ class DeskTop
       width: document.body.scrollWidth
 
     @layer = new Kinetic.Layer
+    @layerOverride = new Kinetic.Layer
 
     @stage.add @layer
+    @stage.add @layerOverride
 
     @wm = new WindowManager
       layer: @layer
+      layerOverride: @layerOverride
       height: document.body.scrollHeight
       width: document.body.scrollWidth
 
